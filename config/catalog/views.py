@@ -17,6 +17,9 @@ from rest_framework.permissions import IsAdminUser
 
 from rest_framework.pagination import PageNumberPagination
 
+from django_filters.rest_framework import DjangoFilterBackend
+# from django_filters import rest_framework as filters
+
 
 class BottleView(mixins.ListModelMixin,
                  mixins.UpdateModelMixin,
@@ -32,7 +35,7 @@ class UserListAPI(viewsets.ReadOnlyModelViewSet):
 
 
 class PerfumViewSetPagination(PageNumberPagination):
-    page_size = 2
+    page_size = 4
     page_size_query_param = 'page_size'
     max_page_size = 6
 
@@ -47,6 +50,7 @@ class PerfumViewSet(mixins.CreateModelMixin,
     serializer_class = PerfumSerializer
 
     pagination_class = PerfumViewSetPagination
+    
 
     queryset = Perfum.objects.all()  # Розшируємо через функцію знизу
 
@@ -57,6 +61,14 @@ class PerfumViewSet(mixins.CreateModelMixin,
     #         return Perfum.objects.all()
     #     return Perfum.objects.filter(pk=pk)
 
+
+    # filterset_fields = ['brand', 'bottle']
+    # знизу розширено і IN
+    filterset_fields = {
+        'brand': ["in", "exact"], # note the 'in' field
+        'bottle': ["exact"]
+    }
+
     @action(methods=['get'], detail=False)
     def brand_list(self, request):
         brand_list_all = Brand.objects.all()
@@ -64,8 +76,8 @@ class PerfumViewSet(mixins.CreateModelMixin,
 
     @action(methods=['get'], detail=True)
     def brand(self, request, pk=None):
-        brand_item_get = Brand.objects.get(pk=pk)
-        return Response({'brand_item': brand_item_get.name})
+        brand_item = Brand.objects.get(pk=pk)
+        return Response({'brand_item': brand_item.name})
 
 
 
